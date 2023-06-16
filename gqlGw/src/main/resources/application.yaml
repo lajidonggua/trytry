@@ -1,0 +1,46 @@
+spring:
+  cache.type: redis
+  application.name: yummyTest
+  webflux:
+    base-path: /
+  graphql:
+    path: /v1/graphql
+    schema:
+      fileExtensions: .graphql
+      printer:
+        enabled: true
+    graphiql:
+      enabled: true
+  cloud:
+    stream:
+      function:
+        routing.enabled: true
+      binders:
+        kafka1:
+          type: kafka
+          environment:
+            spring.cloud.stream.kafka.binder:
+              enableObservation: true
+              brokers: localhost:29092
+              zkNodes: localhost:2181
+              minPartitionCount: 9
+              stateStoreRetry:
+                maxAttempts: 1
+                backOffInterval: 60000
+      bindings:
+        # Producers
+        # Consumers
+        functionRouter-in-0:
+          destination: ${spring.profiles.active:local}-${spring.application.name},test-demo
+          group: ${spring.profiles.active:local}-${spring.application.name}-default-group
+          content-type: application/json
+          consumer:
+            max-attempts: 1
+            auto-bind-dlq: true
+            ackMode: MANUAL
+            multiplex: true
+            concurrency: 3
+          error-handler-definition: ErrorDispatcher
+
+logging.level.org.springframework.cache: TRACE
+
