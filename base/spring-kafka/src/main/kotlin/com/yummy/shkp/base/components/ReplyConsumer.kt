@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 import java.util.function.Consumer
 
 @Component
-class ReplyMessageHandler(
+class ReplyConsumer(
     private val channelCache: ChannelCache
 ) : Consumer<Message<*>> {
     private val log = logger()

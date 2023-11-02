@@ -16,8 +16,9 @@ class MessageDispatcher: MessageRoutingCallback {
     override fun routingResult(message: Message<*>?): String {
         log.info("Message received: $message")
         return when (message!!.headers[Messages.HEADER_TYPE].toString()){
+            // TODO
             HeaderType.REQUEST.toString()->"Demo"
-            HeaderType.RESPONSE.toString()->"ReplyMessageHandler"
+            HeaderType.RESPONSE.toString()->"ReplyConsumer"
             else->throw Exception("Not support Type")
         }
     }

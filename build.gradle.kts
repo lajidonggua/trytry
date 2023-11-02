@@ -28,17 +28,15 @@ subprojects{
 		plugin("org.jetbrains.kotlin.plugin.spring")
 	}
 
-	java.sourceCompatibility = JavaVersion.VERSION_17
-
 	dependencies {
 		// kotlin coroutines
-		implementation("org.springframework:spring-context-support")
-		implementation("org.springframework.boot:spring-boot-starter")
-		implementation("org.jetbrains.kotlin:kotlin-reflect")
-		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+		implementation("org.springframework:spring-context-support:6.0.6")
+		implementation("org.springframework.boot:spring-boot-starter:3.1.0")
+		implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
+		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
 
-		testImplementation("org.springframework.boot:spring-boot-starter-test")
+		testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
 		if(project.name != "logging"){
 			implementation(project(":base:logging"))
 		}
@@ -49,6 +47,9 @@ subprojects{
 			exclude("org.springframework.boot", "spring-boot-starter-logging")
 		}
 	}
+	java.sourceCompatibility = JavaVersion.VERSION_17
+
+
 	tasks.withType<KotlinCompile> {
 		kotlinOptions {
 			freeCompilerArgs = listOf("-Xjsr305=strict")

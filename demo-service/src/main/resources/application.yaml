@@ -1,0 +1,64 @@
+server:
+  port: 8081
+  shutdown: graceful
+spring:
+  profiles:
+    active: local
+  application.name: demo-svc
+  cache.type: redis
+  cloud:
+    stream:
+      function:
+        routing.enabled: true
+        definition: functionRouter;reply
+      binders:
+        kafka1:
+          type: kafka
+          environment:
+            spring.cloud.stream.kafka.binder:
+              enableObservation: true
+              brokers: 110.40.158.88:29092
+              minPartitionCount: 9
+              stateStoreRetry:
+                maxAttempts: 1
+                backOffInterval: 60000
+      bindings:
+        functionRouter-in-0:
+          destination: ${spring.profiles.active:local}-${spring.application.name}
+          group: ${spring.profiles.active:local}-${spring.application.name}-default-group
+          consumer:
+            max-attempts: 1
+            auto-bind-dlq: true
+            ackMode: MANUAL
+            multiplex: true
+            concurrency: 1
+          error-handler-definition: ErrorDispatcher
+        reply-in-0:
+          with-crm: false
+          destination: ${spring.profiles.active:local}-${spring.application.name}
+          group: ${spring.profiles.active:local}-${spring.application.name}-reply-group
+          consumer:
+            max-attempts: 1
+            auto-bind-dlq: true
+            ackMode: MANUAL
+            multiplex: true
+            concurrency: 1
+          error-handler-definition: ErrorDispatcher
+  datasource:
+    url: jdbc:mysql://110.40.158.88:3306/demo
+    username: dg
+    password: dg
+    driver-class-name: com.mysql.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+management:
+  server:
+    port: 8001
+  endpoints:
+    web:
+      exposure:
+        include: bindings
+logging.level.org.springframework.cache: TRACE
+

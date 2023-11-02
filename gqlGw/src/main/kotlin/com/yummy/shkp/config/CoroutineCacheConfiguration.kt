@@ -1,6 +1,6 @@
 package com.yummy.shkp.config
 
-/*
+/**
  * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
 import org.springframework.cache.Cache
 import org.springframework.cache.annotation.CachingConfigurer
-import org.springframework.cache.interceptor.CacheAspectSupport.*
 import org.springframework.cache.interceptor.CacheInterceptor
 import org.springframework.cache.interceptor.CacheOperationInvoker
 import org.springframework.cache.interceptor.CacheOperationSource

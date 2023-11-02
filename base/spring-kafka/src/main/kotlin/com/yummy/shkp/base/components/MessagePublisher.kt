@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.yummy.shkp.base.types.HeaderType
 import com.yummy.shkp.base.types.Messages
 import com.yummy.shkp.base.utils.logger
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.stream.function.StreamBridge
 import org.springframework.messaging.Message
 import org.springframework.messaging.MessageHeaders
@@ -12,31 +13,33 @@ import org.springframework.stereotype.Component
 import org.springframework.util.MimeTypeUtils
 import java.rmi.UnexpectedException
 import java.util.*
-import kotlin.reflect.KClass
 
 
 @Component
 class MessagePublisher(
-    private val streamBridge: StreamBridge,
-    private val channelCache: ChannelCache,
-    private val objectMapper: ObjectMapper,
+    val streamBridge: StreamBridge,
+    val channelCache: ChannelCache,
+    val objectMapper: ObjectMapper,
+    @Value("\${spring.application.name:}") val appName: String,
+    @Value("\${spring.profiles.active:local}") val environment: String,
 ) {
 
-    private val log = logger()
+    val log = logger()
 
-    suspend fun <P : Any> publish(
-        topic: String,
+    final suspend inline fun <reified P : Any> publish(
+        outputTopic: String,
         input: Any,
-        rspType: KClass<P>,
         customHeaders: Map<String, Any> = emptyMap()
     ): P {
+        val topic = "$environment-$outputTopic"
+        val inputTopic = "$environment-$appName"
         log.info("Publish message to $topic")
 
         val correlationId = UUID.randomUUID().toString()
         val headers = MessageHeaders(
             customHeaders + mapOf(
                 Messages.HEADER_TYPE to HeaderType.REQUEST.toString(),
-                Messages.HEADER_SOURCE to "local-yummyTest",
+                Messages.HEADER_SOURCE to inputTopic,
                 Messages.HEADER_CORRELATION_ID to correlationId,
                 MessageHeaders.CONTENT_TYPE to MimeTypeUtils.APPLICATION_JSON_VALUE,
             )
@@ -49,7 +52,7 @@ class MessagePublisher(
         }
         channelCache.subscribe(correlationId).receive().let { msg ->
             val payload = msg.payload
-            return objectMapper.readValue(payload as ByteArray, rspType.java)
+            return objectMapper.readValue(payload as ByteArray, P::class.java)
         }
     }
 
@@ -61,7 +64,7 @@ class MessagePublisher(
         val headers = MessageHeaders(
             mapOf(
                 Messages.HEADER_TYPE to HeaderType.RESPONSE.toString(),
-                Messages.HEADER_SOURCE to "test-demo",
+                Messages.HEADER_SOURCE to replyTopic,
                 Messages.HEADER_CORRELATION_ID to correlationId,
                 MessageHeaders.CONTENT_TYPE to MimeTypeUtils.APPLICATION_JSON_VALUE
             )

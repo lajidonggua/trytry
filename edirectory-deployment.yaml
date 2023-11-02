@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-deployment
+  namespace: demo-app
+  labels:
+    app: demo-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-deployment
+  template:
+    metadata:
+      labels:
+        app: demo-deployment
+    spec:
+      containers:
+        - name: demo-deployment
+          image: registry.docker.yummydo.top/demo-deployment:latest
+#          lifecycle:
+#            preStop:
+#              exec:
+#                command:
+#                  - /bin/sh
+#                  - -c
+#                  - |
+#                    curl -f -d '{"state":"STOPPED"}' -H "Content-Type: application/json" -X POST http://localhost:8000/actuator/bindings/functionRouter-in-0
+          ports:
+            - containerPort: 8000
+            - containerPort: 8082
+          resources:
+            limits:
+              memory: 1000M
+            requests:
+              cpu: "100m"
+              memory: 1000M
+      imagePullSecrets:
+        - name: registry-key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-deployment
+  namespace: demo-app
+spec:
+  type: NodePort
+  ports:
+    - port: 8082
+      nodePort: 30082
+  selector:
+    app: demo-deployment
